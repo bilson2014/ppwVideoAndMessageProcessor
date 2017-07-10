@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	                    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	                    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+	                    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	                    http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+	                    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+	                    http://www.springframework.org/schema/jms   
+   					    http://www.springframework.org/schema/jms/spring-jms-4.0.xsd">
+
+	<bean id="threadPoolTaskExecutor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="5" />
+		<property name="maxPoolSize" value="20" />
+		<property name="queueCapacity" value="1000" />
+		<property name="threadNamePrefix" value="jmsTaskExecutor-" />
+		<property name="allowCoreThreadTimeOut" value="true"></property>
+	</bean>
+
+	<!-- 真正可以产生Connection的ConnectionFactory，由对应的 JMS服务厂商提供 -->
+	<bean id="targetConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<!-- ActiveMQ服务地址 -->
+		<property name="brokerURL" value="${mq.brokerURL}" />
+		<property name="userName" value="${mq.userName}"></property>
+		<property name="password" value="${mq.password}"></property>
+	</bean>
+
+	<!-- ActiveMQ为我们提供了一个PooledConnectionFactory，通过往里面注入一个ActiveMQConnectionFactory 
+		可以用来将Connection、Session和MessageProducer池化，这样可以大大的减少我们的资源消耗。 要依赖于 activemq-pool包 -->
+	<bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">
+		<property name="connectionFactory" ref="targetConnectionFactory" />
+		<property name="maxConnections" value="${mq.pool.maxConnections}" />
+	</bean>
+
+	<!-- Spring用于管理真正的ConnectionFactory的ConnectionFactory -->
+	<bean id="connectionFactory"
+		class="org.springframework.jms.connection.SingleConnectionFactory">
+		<!-- 目标ConnectionFactory对应真实的可以产生JMS Connection的ConnectionFactory -->
+		<property name="targetConnectionFactory" ref="pooledConnectionFactory" />
+	</bean>
+
+	<!-- Spring提供的JMS工具类，它可以进行消息发送、接收等 -->
+
+	<!-- 队列模板 -->
+	<bean id="activeMqJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<!-- 这个connectionFactory对应的是我们定义的Spring提供的那个ConnectionFactory对象 -->
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestinationName" value="${mailQueue}"></property>
+	</bean>
+
+	<!--邮件队列地址 -->
+	<bean id="mailQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${mailQueue}</value>
+		</constructor-arg>
+	</bean>
+
+	<!--短信队列地址 -->
+	<bean id="smsQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${smsQueue}</value>
+		</constructor-arg>
+	</bean>
+
+	<!--短信队列地址 -->
+	<bean id="logQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${logQueue}</value>
+		</constructor-arg>
+	</bean>
+
+	<!--短信队列地址 -->
+	<bean id="fileConverQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${fileConverQueue}</value>
+		</constructor-arg>
+	</bean>
+
+	<!-- 可以获取session的MessageListener,邮件队列监听事件 -->
+	<bean id="mailConsumerSessionAwareMessageListener"
+		class="com.paipianwang.mq.consumer.listener.MailConsumerSessionAwareMessageListener"></bean>
+
+	<!-- 可以获取session的MessageListener,短信队列监听事件 -->
+	<bean id="smsRegisterConsumerSessionAwareMessageListener"
+		class="com.paipianwang.mq.consumer.listener.SMSRegisterConsumerSessionAwareMessageListener"></bean>
+
+	<!-- 可以获取session的MessageListener,日志队列监听事件 -->
+	<bean id="logConsumerSessionAwareMessageListener"
+		class="com.paipianwang.mq.consumer.listener.LogConsumerSessionAwareMessageListener"></bean>
+
+	<!-- 可以获取session的MessageListener,日志队列监听事件 -->
+	<bean id="fileConverConsumerSessionAwareMessageListener"
+		class="com.paipianwang.mq.consumer.listener.FileConverConsumerSessionAwareMessageListener"></bean>
+
+	<jms:listener-container container-type="default"
+		connection-factory="connectionFactory" acknowledge="auto" concurrency="10"
+		task-executor="threadPoolTaskExecutor">
+		<jms:listener destination="${mailQueue}"
+			ref="mailConsumerSessionAwareMessageListener" method="onMessage" />
+		<jms:listener destination="${smsQueue}"
+			ref="smsRegisterConsumerSessionAwareMessageListener" method="onMessage" />
+		<jms:listener destination="${logQueue}"
+			ref="logConsumerSessionAwareMessageListener" method="onMessage" />
+		<jms:listener destination="${fileConverQueue}"
+			ref="fileConverConsumerSessionAwareMessageListener" method="onMessage" />
+	</jms:listener-container>
+</beans>

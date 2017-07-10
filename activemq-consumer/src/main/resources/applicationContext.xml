@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		                   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		                   http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+		                   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		                   http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+		                   http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+	<context:property-placeholder location="classpath:sms.properties,classpath:mq.properties,classpath:mail.properties" />
+
+	<context:component-scan base-package="com.paipianwang.mq.consumer.service,
+										  com.paipianwang.mq.utils" />
+
+	<context:annotation-config />
+
+	<tx:annotation-driven />
+	
+	<bean id="globalConstants" class="com.paipianwang.mq.consumer.domain.GlobalConstants">
+		<constructor-arg name="accountSID" value="${sms.accountSID}" />
+		<constructor-arg name="auth_token" value="${sms.authToken}" />
+		<constructor-arg name="appId" value="${sms.appID}" />
+		<constructor-arg name="https_url" value="${sms.https_url}" />
+		<constructor-arg name="https_port" value="${sms.https_port}" />
+		<constructor-arg name="template_register" value="${sms.template.register}" />
+		<constructor-arg name="template_notice" value="${sms.template.notice}" />
+	</bean>
+	
+	<import resource="spring-mq.xml" />
+	
+	<import resource="spring-mail.xml" />
+	
+	<import resource="dubbo-consumer.xml"/>
+</beans>
