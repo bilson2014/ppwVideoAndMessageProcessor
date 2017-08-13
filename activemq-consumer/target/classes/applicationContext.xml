@@ -11,10 +11,11 @@
 		                   http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
 		                   http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
-	<context:property-placeholder location="classpath:sms.properties,classpath:mq.properties,classpath:mail.properties" />
+	<context:property-placeholder location="classpath:sms.properties,classpath:mq.properties,classpath:mail.properties,classpath:jdbc.properties,classpath:redis.properties" />
 
 	<context:component-scan base-package="com.paipianwang.mq.consumer.service,
-										  com.paipianwang.mq.utils" />
+										  com.paipianwang.mq.utils,
+										  com.paipianwang.mq.consumer.dao" />
 
 	<context:annotation-config />
 
@@ -35,4 +36,36 @@
 	<import resource="spring-mail.xml" />
 	
 	<import resource="dubbo-consumer.xml"/>
+	
+	<!-- redis 配置 -->
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<!-- 最大连接数 -->
+		<property name="maxTotal" value="${redis.maxTotal}" />
+		<!-- 最大空闲数 -->
+		<property name="maxIdle" value="${redis.maxIdle}" />
+		<!-- 每次释放连接的最大数目 -->
+		<property name="numTestsPerEvictionRun" value="${redis.numTestsPerEvictionRun}" />
+		<!-- 释放连接的扫描间隔（毫秒） -->
+		<property name="timeBetweenEvictionRunsMillis" value="${redis.timeBetweenEvictionRunsMillis}" />
+		<!-- 连接最小空闲时间 -->
+		<property name="minEvictableIdleTimeMillis" value="${redis.minEvictableIdleTimeMillis}" />
+		<!-- 连接空闲多久后 释放，当空闲时间 > 该值 且 空闲连接 > 最大空闲连接数 时，直接释放 -->
+		<property name="softMinEvictableIdleTimeMillis" value="${redis.softMinEvictableIdleTimeMillis}" />
+		<!-- 最大等待时间 -->
+		<property name="maxWaitMillis" value="${redis.maxWaitMillis}" />
+		<!-- 获取连接时检查有效性，默认false -->
+		<property name="testOnBorrow" value="${redis.testOnBorrow}" />
+		<!-- 空闲时检查有效性，默认false -->
+		<property name="testWhileIdle" value="${redis.testWhileIdle}" />
+		<!-- 连接耗尽是否阻塞，false报异常，true阻塞直到超时，默认true -->
+		<property name="blockWhenExhausted" value="${blockWhenExhausted}" />
+	</bean>
+
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+		<constructor-arg index="0" ref="jedisPoolConfig" />
+		<constructor-arg index="1" value="${redis.server}" />
+		<constructor-arg index="2" value="6379" />
+		<constructor-arg index="3" value="${redis.timeout}" />
+		<constructor-arg index="4" value="${redis.password}" />
+	</bean>
 </beans>
