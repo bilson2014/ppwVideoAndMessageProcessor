@@ -13,6 +13,14 @@ public class MailParam extends BaseObject {
 	private String subject; // 主题
 
 	private String content; // 邮件内容
+	
+	private String[] cc;//抄送人
+	
+	private String[] bcc;//密件抄送人
+	
+	private String[][] files;//附件--附件名称,fdfs文件路径
+
+	
 
 	public String getFrom() {
 		return from;
@@ -46,4 +54,27 @@ public class MailParam extends BaseObject {
 		this.content = content;
 	}
 
+	public String[] getCc() {
+		return cc;
+	}
+
+	public void setCc(String[] cc) {
+		this.cc = cc;
+	}
+
+	public String[][] getFiles() {
+		return files;
+	}
+
+	public void setFiles(String[][] files) {
+		this.files = files;
+	}
+
+	public String[] getBcc() {
+		return bcc;
+	}
+
+	public void setBcc(String[] bcc) {
+		this.bcc = bcc;
+	}
 }
