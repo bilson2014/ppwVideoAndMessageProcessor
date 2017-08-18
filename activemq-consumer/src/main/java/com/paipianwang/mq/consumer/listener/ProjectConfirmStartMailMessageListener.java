@@ -32,7 +32,7 @@ public class ProjectConfirmStartMailMessageListener implements SessionAwareMessa
 		try {
 			ActiveMQTextMessage msg = (ActiveMQTextMessage) message;
 			final String ms = msg.getText();
-			logger.info("Receive register message (onMessage) , content: " + ms);
+			logger.info("Receive projectConfirm message (onMessage) , content: " + ms);
 			if(!ValidateUtil.isValid(ms)){
 				return ;
 			}

@@ -14,8 +14,6 @@ import org.springframework.jms.core.MessageCreator;
 import org.springframework.jms.listener.SessionAwareMessageListener;
 import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson.JSONObject;
-import com.paipianwang.mq.consumer.resource.model.MailParam;
 import com.paipianwang.mq.consumer.service.ProductMailService;
 import com.paipianwang.pat.common.util.ValidateUtil;
 @Component
@@ -34,7 +32,7 @@ public class ProjectSampleMideaMailMessageListener implements SessionAwareMessag
 		try {
 			ActiveMQTextMessage msg = (ActiveMQTextMessage) message;
 			final String ms = msg.getText();
-			logger.info("Receive register message (onMessage) , content: " + ms);
+			logger.info("Receive projectSampleMidea message (onMessage) , content: " + ms);
 			if(!ValidateUtil.isValid(ms)){
 				return ;
 			}
