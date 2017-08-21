@@ -10,13 +10,33 @@
 
 	<!-- 使用zookeeper注册中心暴露服务地址 -->
 	<!-- 注册中心地址 -->
-	<dubbo:registry protocol="zookeeper" address="106.75.105.16:2181,106.75.105.16:2182,106.75.105.16:2183" />
-	<!-- <dubbo:registry protocol="zookeeper" address="123.59.75.93:2181" /> -->
+	<!-- <dubbo:registry protocol="zookeeper" address="106.75.105.16:2181,106.75.105.16:2182,106.75.105.16:2183" /> -->
+	<dubbo:registry protocol="zookeeper" address="123.59.75.93:2181" />
 	
 	<!-- 用户服务接口 -->
 	<dubbo:reference interface="com.paipianwang.facade.video.service.VideoHandlerFacade" id="videoHandlerFacade" check="false" timeout="1200000" />
 	
 	<!-- 用户服务接口 -->
 	<dubbo:reference interface="com.paipianwang.pat.facade.product.service.PmsProductFacade" id="pmsProductFacade" check="false" timeout="5000" />
+	<!-- 项目流程服务接口 -->
+	<dubbo:reference interface="com.paipianwang.pat.workflow.facade.PmsProjectFlowFacade" id="pmsProjectFlowFacade" check="false" timeout="5000"/>
+	<dubbo:reference interface="com.paipianwang.pat.workflow.facade.PmsProjectResourceFacade" id="pmsProjectResourceFacade" check="false" timeout="5000"/>
+	<dubbo:reference interface="com.paipianwang.pat.workflow.facade.PmsProjectSynergyFacade" id="pmsProjectSynergyFacade" check="false" timeout="5000"/>
+	<dubbo:reference interface="com.paipianwang.pat.workflow.facade.PmsProjectTeamFacade" id="pmsProjectTeamFacade" check="false" timeout="5000"/>
+	<dubbo:reference interface="com.paipianwang.pat.workflow.facade.PmsProjectUserFacade" id="pmsProjectUserFacade" check="false" timeout="5000"/>
+	<!--供应商服务接口 -->
+	<dubbo:reference interface="com.paipianwang.pat.facade.team.service.PmsTeamFacade" id="pmsTeamFacade" check="false" timeout="15000" />
+	<dubbo:reference interface="com.paipianwang.pat.facade.team.service.PmsTeamTmpFacade" id="pmsTeamTmpFacade" check="false" timeout="5000"/>
+	<dubbo:reference interface="com.paipianwang.pat.facade.team.service.PmsProvinceFacade" id="pmsProvinceFacade" check="false" timeout="5000" />
+	<dubbo:reference interface="com.paipianwang.pat.facade.team.service.PmsCityFacade" id="pmsCityFacade" check="false" timeout="5000" />
+	<!--用户服务接口 -->
+	<dubbo:reference interface="com.paipianwang.pat.facade.user.service.PmsUserFacade" id="pmsUserFacade" check="false" timeout="10000" />
+	<!--员工服务接口 -->
+	<dubbo:reference interface="com.paipianwang.pat.facade.right.service.PmsEmployeeFacade" id="pmsEmployeeFacade" check="false" timeout="5000" />
+	<dubbo:reference interface="com.paipianwang.pat.facade.employee.service.PmsStaffFacade" id="pmsStaffFacade" check="false" timeout="5000"/>
+	<dubbo:reference interface="com.paipianwang.pat.facade.employee.service.PmsJobFacade" id="pmsJobFacade" check="false" timeout="5000"/>
+	<!--消息通知服务接口 -->
+	<dubbo:reference interface="com.paipianwang.pat.facade.information.service.PmsMailFacade" id="pmsMailFacade" check="false" timeout="5000"/>
+	<dubbo:reference interface="com.paipianwang.pat.facade.information.service.PmsNewsFacade" id="pmsNewsFacade" check="false" timeout="5000"/>
 	
 </beans>

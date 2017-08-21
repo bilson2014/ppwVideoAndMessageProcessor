@@ -53,6 +53,35 @@
 		<property name="connectionFactory" ref="connectionFactory" />
 		<property name="defaultDestinationName" value="${mailQueue}"></property>
 	</bean>
+	<!-- 项目流程邮件队列模板 -->
+	<!-- <bean id="infoLetterJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestinationName" value="${projectInfoLetterQueue}"/>
+	</bean>
+	<bean id="planStartJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestinationName" value="${projectPlanStartQueue}"/>
+	</bean>
+	<bean id="confirmStartJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestinationName" value="${projectConfirmStartQueue}"/>
+	</bean>
+	<bean id="productStartJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestinationName" value="${projectProductStartQueue}"/>
+	</bean>
+	<bean id="sampleMideaJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestinationName" value="${projectSampleMideaQueue}"/>
+	</bean>
+	<bean id="acceptConfirmJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestinationName" value="${projectAcceptConfirmQueue}"/>
+	</bean>
+	<bean id="acceptLetterJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestinationName" value="${projectAcceptLetterQueue}"/>
+	</bean> -->
 
 	<!--邮件队列地址 -->
 	<bean id="mailQueue" class="org.apache.activemq.command.ActiveMQQueue">
@@ -82,6 +111,49 @@
 		</constructor-arg>
 	</bean>
 
+	<!--项目告知函邮件队列地址 -->
+	<bean id="projectInfoLetterQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${projectInfoLetterQueue}</value>
+		</constructor-arg>
+	</bean>
+	<!--项目策划启动函邮件队列地址 -->
+	<bean id="projectPlanStartQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${projectPlanStartQueue}</value>
+		</constructor-arg>
+	</bean>
+	<!--项目确认启动函邮件队列地址 -->
+	<bean id="projectConfirmStartQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${projectConfirmStartQueue}</value>
+		</constructor-arg>
+	</bean>
+	<!--项目制作确认启动函邮件队列地址 -->
+	<bean id="projectProductStartQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${projectProductStartQueue}</value>
+		</constructor-arg>
+	</bean>
+	<!--项目样片修改意见邮件队列地址 -->
+	<bean id="projectSampleMideaQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${projectSampleMideaQueue}</value>
+		</constructor-arg>
+	</bean>
+	<!--项目验收确认函邮件队列地址 -->
+	<bean id="projectAcceptConfirmQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${projectAcceptConfirmQueue}</value>
+		</constructor-arg>
+	</bean>
+	<!--项目项目验收函邮件队列地址 -->
+	<bean id="projectAcceptLetterQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${projectAcceptLetterQueue}</value>
+		</constructor-arg>
+	</bean>
+
 	<!-- 可以获取session的MessageListener,邮件队列监听事件 -->
 	<bean id="mailConsumerSessionAwareMessageListener"
 		class="com.paipianwang.mq.consumer.listener.MailConsumerSessionAwareMessageListener"></bean>
@@ -97,6 +169,34 @@
 	<!-- 可以获取session的MessageListener,日志队列监听事件 -->
 	<bean id="fileConverConsumerSessionAwareMessageListener"
 		class="com.paipianwang.mq.consumer.listener.FileConverConsumerSessionAwareMessageListener"></bean>
+<!-- 项目流程邮件发送  -->
+	<!-- 可以获取session的MessageListener,项目告知函邮件发送队列监听事件 -->
+	<bean id="projectInfoLetterMailMessageListener"
+		class="com.paipianwang.mq.consumer.listener.ProjectInfoLetterMailMessageListener"></bean>
+
+	<!-- 可以获取session的MessageListener,策划启动函邮件发送队列监听事件 -->
+	<bean id="projectPlanStartMailMessageListener"
+		class="com.paipianwang.mq.consumer.listener.ProjectPlanStartMailMessageListener"></bean>
+
+	<!-- 可以获取session的MessageListener,项目确认函邮件发送队列监听事件 -->
+	<bean id="projectConfirmStartMailMessageListener"
+		class="com.paipianwang.mq.consumer.listener.ProjectConfirmStartMailMessageListener"></bean>
+
+	<!-- 可以获取session的MessageListener,项目制作启动函发送队列监听事件 -->
+	<bean id="projectProductStartMailMessageListener"
+		class="com.paipianwang.mq.consumer.listener.ProjectProductStartMailMessageListener"></bean>
+
+	<!-- 可以获取session的MessageListener,项目样片修改已经邮件发送队列监听事件 -->
+	<bean id="projectSampleMideaMailMessageListener"
+		class="com.paipianwang.mq.consumer.listener.ProjectSampleMideaMailMessageListener"></bean>
+
+	<!-- 可以获取session的MessageListener,项目验收确认函邮件发送队列监听事件 -->
+	<bean id="projectAcceptConfirmMailMessageListener"
+		class="com.paipianwang.mq.consumer.listener.ProjectAcceptConfirmMailMessageListener"></bean>
+
+	<!-- 可以获取session的MessageListener,项目验收函邮件发送队列监听事件 -->
+	<bean id="projectAcceptLetterMailMessageListener"
+		class="com.paipianwang.mq.consumer.listener.ProjectAcceptLetterMailMessageListener"></bean>
 
 	<jms:listener-container container-type="default"
 		connection-factory="connectionFactory" acknowledge="auto" concurrency="10"
@@ -109,5 +209,20 @@
 			ref="logConsumerSessionAwareMessageListener" method="onMessage" />
 		<jms:listener destination="${fileConverQueue}"
 			ref="fileConverConsumerSessionAwareMessageListener" method="onMessage" />
+			
+		<jms:listener destination="${projectInfoLetterQueue}"
+			ref="projectInfoLetterMailMessageListener" method="onMessage" />
+		<jms:listener destination="${projectPlanStartQueue}"
+			ref="projectPlanStartMailMessageListener" method="onMessage" />
+		<jms:listener destination="${projectConfirmStartQueue}"
+			ref="projectConfirmStartMailMessageListener" method="onMessage" />
+		<jms:listener destination="${projectProductStartQueue}"
+			ref="projectProductStartMailMessageListener" method="onMessage" />
+		<jms:listener destination="${projectSampleMideaQueue}"
+			ref="projectSampleMideaMailMessageListener" method="onMessage" />
+		<jms:listener destination="${projectAcceptConfirmQueue}"
+			ref="projectAcceptConfirmMailMessageListener" method="onMessage" />
+		<jms:listener destination="${projectAcceptLetterQueue}"
+			ref="projectAcceptLetterMailMessageListener" method="onMessage" />
 	</jms:listener-container>
 </beans>
