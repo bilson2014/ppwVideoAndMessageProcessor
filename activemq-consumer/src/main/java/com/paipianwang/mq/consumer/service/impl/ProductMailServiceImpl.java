@@ -23,6 +23,7 @@ import com.ibm.icu.util.Calendar;
 import com.paipianwang.mq.consumer.dao.MailDao;
 import com.paipianwang.mq.consumer.resource.model.MailParam;
 import com.paipianwang.mq.consumer.service.MailService;
+import com.paipianwang.mq.consumer.service.ProductMailService;
 import com.paipianwang.mq.utils.MailTemplateFactory;
 import com.paipianwang.pat.common.config.PublicConfig;
 import com.paipianwang.pat.common.enums.FileType;
@@ -52,7 +53,7 @@ import com.paipianwang.pat.workflow.facade.PmsProjectTeamFacade;
 import com.paipianwang.pat.workflow.facade.PmsProjectUserFacade;
 
 @Service
-public class ProductMailServiceImpl implements com.paipianwang.mq.consumer.service.ProductMailService {
+public class ProductMailServiceImpl implements ProductMailService {
 	private static final Logger logger = LoggerFactory.getLogger(ProductMailServiceImpl.class);
 	
 	@Autowired
