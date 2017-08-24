@@ -14,7 +14,9 @@ import org.springframework.jms.core.MessageCreator;
 import org.springframework.jms.listener.SessionAwareMessageListener;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.fastjson.JSONObject;
 import com.paipianwang.mq.consumer.service.ProductMailService;
+import com.paipianwang.pat.common.util.JsonUtil;
 
 @Component
 public class ProjectInfoLetterMailMessageListener implements SessionAwareMessageListener<Message> {
@@ -36,9 +38,10 @@ public class ProjectInfoLetterMailMessageListener implements SessionAwareMessage
 			if (ms == null) {
 				return;
 			}
-			
+			JSONObject json=JSONObject.parseObject(ms);
+			String projectId=json.getString("projectId");
 			try {
-				productMailService.sendProjectInfoLetter(ms);
+				productMailService.sendProjectInfoLetter(projectId);
 				Thread.sleep(200);
 			} catch (Exception e) {
 				// 发送异常，重新放回队列
@@ -54,5 +57,4 @@ public class ProjectInfoLetterMailMessageListener implements SessionAwareMessage
 		}
 		
 	}
-
 }

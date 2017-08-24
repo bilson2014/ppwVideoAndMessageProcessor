@@ -33,6 +33,8 @@ import com.paipianwang.pat.common.web.poi.util.GenerateExcel;
 import com.paipianwang.pat.common.web.poi.util.GenerateWord;
 import com.paipianwang.pat.facade.information.entity.PmsMail;
 import com.paipianwang.pat.facade.information.service.PmsMailFacade;
+import com.paipianwang.pat.facade.product.entity.PmsDimension;
+import com.paipianwang.pat.facade.product.service.PmsDimensionFacade;
 import com.paipianwang.pat.facade.right.entity.PmsEmployee;
 import com.paipianwang.pat.facade.right.service.PmsEmployeeFacade;
 import com.paipianwang.pat.facade.team.entity.PmsTeam;
@@ -78,11 +80,15 @@ public class ProductMailServiceImpl implements ProductMailService {
 	private MailService service;
 	@Autowired
 	private PmsUserFacade pmsUserFacade;
+	@Autowired
+	private PmsDimensionFacade pmsDimensionFacade;
 
-	// 发送项目告知函
+	
+	// 发送项目确认启动函
 	@Override
-	public void sendProjectInfoLetter(String projectId) {
-		String mailType = "projectInformLetter";
+	public void sendProjectConfirmStart(String projectId) {
+		logger.info("into sendProjectConfirmStart");
+		String mailType = "projectConfirmStart";
 		Map<String, Map<String, Object>> amap = new HashMap<>();
 		Map<String, Object> each = new HashMap<String, Object>();
 		// 邮件处理--收件人(客户)、抄送人、发送人、附件
@@ -105,8 +111,18 @@ public class ProductMailServiceImpl implements ProductMailService {
 		String[] value = new String[6];
 		value[0] = user.getUserName();// 客户名称
 		value[1] = flow.getProjectName();
-		value[2] = flow.getProductName() + "+" + flow.getProductConfigLevelName() + "+" + flow.getProductConfigLength()
-				+ "+" + flow.getProductConfigAdditionalPackageName();//
+		value[2] = flow.getProductName() + "+" + flow.getProductConfigLevelName();
+		if(ValidateUtil.isValid(flow.getProductConfigLength())){
+			PmsDimension dimension=pmsDimensionFacade.getDimensionById(Long.parseLong(flow.getProductConfigLength()));
+			if(dimension!=null){
+				value[2]=value[2]+ "+" + dimension.getRowName();
+			}
+		}
+		
+		if(ValidateUtil.isValid(flow.getProductConfigAdditionalPackageName())){
+			value[2]=value[2]+ "+" + flow.getProductConfigAdditionalPackageName();
+		}
+		
 		value[3] = flow.getEstimatedPrice() + "元";
 		value[4] = principal.getEmployeeRealName();// 负责人-创建项目的人
 		value[5] = principal.getPhoneNumber();
@@ -127,21 +143,25 @@ public class ProductMailServiceImpl implements ProductMailService {
 	 */
 	private void getByMail(String mailType, String projectId, Map<String, Map<String, Object>> amap,
 			Map<String, Object> each) {
-		PmsMail m = mailDao.getMailFromRedis(mailType);
-		if (null == m)
+		PmsMail m = null;//mailDao.getMailFromRedis(mailType);
+		if (null == m){
 			m = pmsMailFacade.getTemplateByType(mailType);
+		}
+			
 		if (m != null) {
 			String receiver = m.getReceiver();
 			String recieverRole = m.getReceiverRole();
 			// 获取收件人
 			Set<String> receivers = getEmailBySetting(receiver, recieverRole, projectId);
+			logger.info("receivers:"+receivers+"");
 			if (!ValidateUtil.isValid(receivers)) {
 				// 模板异常
-				return;
+				throw new RuntimeException("receiver is null:"+projectId+" with "+receiver+" and "+recieverRole);
 			}
 			receivers.forEach(rec -> amap.put(rec, each));
 			// 获取抄送人
 			Set<String> bcc = getEmailBySetting(m.getBcc(), m.getBccRole(), projectId);
+			logger.info("bcc:"+bcc+"");
 			if (ValidateUtil.isValid(bcc)) {
 				each.put("bcc", bcc.toArray(new String[bcc.size()]));
 			}
@@ -160,9 +180,9 @@ public class ProductMailServiceImpl implements ProductMailService {
 					FileType[] values = FileType.values();
 					
 					for (FileType value : values) {
-						//固定模板 TODO 
+						//固定模板 
 						if(value.getType() == 3 && value.getId().equals(fileType)){
-							fileUrls.add(new String[] { value.getName(), PublicConfig.FILE_TEMPLATE_PATH+File.separator+"model"+File.separator+value.getName(),"template" });
+							fileUrls.add(new String[] { value.getText()+value.getName().substring(value.getName().lastIndexOf(".")), PublicConfig.FILE_TEMPLATE_PATH+File.separator+"model"+File.separator+value.getName(),"template" });
 							continue fileDealt;
 						}
 						// 自动生成
@@ -186,6 +206,7 @@ public class ProductMailServiceImpl implements ProductMailService {
 		}
 	}
 
+
 	/**
 	 * 根据邮件配置获取相关邮箱地址（发件人、收件人、抄送人）--项目流程类
 	 * 
@@ -195,6 +216,7 @@ public class ProductMailServiceImpl implements ProductMailService {
 	 * @return
 	 */
 	private Set<String> getEmailBySetting(String emails, String emailRoles, String projectId) {
+		logger.info(emails+"--"+emailRoles+"--"+projectId);
 		Set<String> result = new HashSet<String>();
 		if (ValidateUtil.isValid(emails)) {
 			String[] emailList = emails.split(",");
@@ -215,7 +237,7 @@ public class ProductMailServiceImpl implements ProductMailService {
 						|| ProjectRoleType.teamProduct.getId().equals(rr)) {
 					// 策划供应商/制作供应商
 					List<String> params = new ArrayList<String>();
-					params.add("email");
+//					params.add("email");
 					params.add("teamId");
 					if(ProjectRoleType.teamPlan.getId().equals(rr)){
 						rr=ProjectTeamType.scheme.getCode();//TODO 邮件与枚举一致
@@ -223,7 +245,6 @@ public class ProductMailServiceImpl implements ProductMailService {
 						rr=ProjectTeamType.produce.getCode();
 					}
 					PmsProjectTeam team = pmsProjectTeamFacade.getProjectTeamByMap(params, projectId, rr);
-					
 					PmsTeam pmsTeam=pmsTeamFacade.findTeamById(team.getTeamId().longValue());//TODO 构造简化方法，只获取邮箱
 					if (pmsTeam != null)
 						result.add(pmsTeam.getEmail());
@@ -280,6 +301,7 @@ public class ProductMailServiceImpl implements ProductMailService {
 		teamData.add("planTime");
 		teamData.add("accessMan");
 		teamData.add("accessManTelephone");
+		teamData.add("teamType");
 		PmsProjectTeam team = pmsProjectTeamFacade.getProjectTeamByMap(teamData, projectId,
 				ProjectTeamType.scheme.getCode());// 策划供应商
 
@@ -319,10 +341,10 @@ public class ProductMailServiceImpl implements ProductMailService {
 
 	}
 
-	// 发送项目确认启动函
+	// 发送项目告知函
 	@Override
-	public void sendProjectConfirmStart(String projectId) {
-		String mailType = "projectConfirmStart";
+	public void sendProjectInfoLetter(String projectId) {
+		String mailType = "projectInformLetter";
 		Map<String, Map<String, Object>> amap = new HashMap<>();
 		Map<String, Object> each = new HashMap<String, Object>();
 		// 收件人-客户
@@ -386,6 +408,9 @@ public class ProductMailServiceImpl implements ProductMailService {
 		teamData.add("telephone");
 		teamData.add("email");
 		teamData.add("teamId");
+		teamData.add("teamType");
+		teamData.add("makeContent");
+		teamData.add("makeTime");
 		PmsProjectTeam team = pmsProjectTeamFacade.getProjectTeamByMap(teamData, projectId,
 				ProjectTeamType.produce.getCode());// 制作供应商
 		List<PmsProjectSynergy> cmoSynergy = pmsProjectSynergyFacade.getSynergys(projectId,
@@ -574,9 +599,10 @@ public class ProductMailServiceImpl implements ProductMailService {
 		params.add(team.getTeamName());
 		params.add(team.getLinkman());
 		params.add(team.getTelephone());
-		params.add(team.getEmail());
+//		params.add(team.getEmail());
 
 		PmsTeam pmsTeam = team.getTeamId() == null ? null : pmsTeamFacade.findTeamById(team.getTeamId().longValue());
+		params.add(pmsTeam == null ? "" : pmsTeam.getEmail());
 		params.add(pmsTeam == null ? "" : pmsTeam.getAddress());
 
 		Map<String, String> beanParams = new HashMap<>();
@@ -584,7 +610,7 @@ public class ProductMailServiceImpl implements ProductMailService {
 			beanParams.put("_" + i, params.get(i - 1));
 		}
 		
-		return GenerateExcel.generateByModel(beanParams, "项目制作单"+new Date().getTime(), 1);//TODO 生成名称唯一标记
+		return GenerateExcel.generateByModel(beanParams, "项目制作单"+new Date().getTime(), 1);
 	}
 
 	// 生成项目服务函
@@ -631,7 +657,7 @@ public class ProductMailServiceImpl implements ProductMailService {
 			beanParams.put(i + "", params.get(i - 1));
 		}
 
-		return GenerateWord.generateByModel(beanParams, "客户项目服务函"+new Date().getTime(), 1);//TODO 生成名称唯一标记
+		return GenerateWord.generateByModel(beanParams, "客户项目服务函"+new Date().getTime(), 1);
 	}
 	
 	public void sendAttachMailsByType(String mailType, Map<String, Map<String,Object>> map) {
