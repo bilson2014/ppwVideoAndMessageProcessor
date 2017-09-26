@@ -16,50 +16,55 @@ import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONObject;
 import com.paipianwang.mq.consumer.service.ProductMailService;
+import com.paipianwang.mq.consumer.service.ProjectTopicMailService;
 import com.paipianwang.pat.common.util.ValidateUtil;
+/**
+ * 添加留言回复邮件通知
+ */
 @Component
-public class ProjectPlanStartMailMessageListener implements SessionAwareMessageListener<Message> {
-	private static final Logger logger = LoggerFactory.getLogger(ProjectPlanStartMailMessageListener.class);
+public class TopicReplyInformMailMessageListener implements SessionAwareMessageListener<Message>{
+	private static final Logger logger = LoggerFactory.getLogger(TopicReplyInformMailMessageListener.class);
 	
 	@Autowired
 	private JmsTemplate activeMqJmsTemplate;
 	@Autowired
-	private Destination projectPlanStartQueue;
+	private Destination topicReplyInformEmailQueue;
 	@Autowired
-	private ProductMailService productMailService;
+	private ProjectTopicMailService ProjectTopicMailService;
 	
 	@Override
 	public void onMessage(Message message, Session session) throws JMSException {
+
 		try {
 			ActiveMQTextMessage msg = (ActiveMQTextMessage) message;
 			final String ms = msg.getText();
-			logger.info("Receive projectPlanStart message (onMessage) , content: " + ms);
+			logger.info("Receive topicReplyInformMail message (onMessage) , content: " + ms);
 			if(!ValidateUtil.isValid(ms)){
 				return ;
 			}
 			JSONObject json=JSONObject.parseObject(ms);
-			String projectId=json.getString("projectId");
-			int time=json.getIntValue("time");//初始为0
+			String messageId=json.getString("messageId");
+			Integer time=json.getInteger("time");//初始为0
 			try {
-				productMailService.sendProjectPlanStart(projectId);
+				ProjectTopicMailService.sendTopicReplyInformEmail(messageId);
 				Thread.sleep(200);
 			} catch (Exception e) {
 				// 发送异常，重新放回队列-最多尝试3次
 				if(time<=2){
 					time++;
 					json.put("time", time);
-					activeMqJmsTemplate.send(projectPlanStartQueue, new MessageCreator() {
+					activeMqJmsTemplate.send(topicReplyInformEmailQueue,new MessageCreator() {
 						public Message createMessage(Session session) throws JMSException {
 							return session.createTextMessage(json.toString());
 						}
 					});
+					logger.info("repeat send message ");
 				}
 				logger.error("==>MailException:", e);
 			}
 		} catch (Exception e) {
 			logger.error("==>", e);
-		}
-		
+		}	
 	}
 
 }

@@ -83,6 +83,7 @@
 		<property name="defaultDestinationName" value="${projectAcceptLetterQueue}"/>
 	</bean> -->
 
+	<!--************************队列地址 begin************************-->
 	<!--邮件队列地址 -->
 	<bean id="mailQueue" class="org.apache.activemq.command.ActiveMQQueue">
 		<constructor-arg>
@@ -153,7 +154,17 @@
 			<value>${projectAcceptLetterQueue}</value>
 		</constructor-arg>
 	</bean>
-
+	
+	<!--项目添加留言回复通知邮件队列地址 -->
+	<bean id="topicReplyInformEmailQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${topicReplyInformEmailQueue}</value>
+		</constructor-arg>
+	</bean>
+	<!-- ************************队列地址 end************************ -->
+	
+	<!-- ************************监听事件 begin************************ -->
+	
 	<!-- 可以获取session的MessageListener,邮件队列监听事件 -->
 	<bean id="mailConsumerSessionAwareMessageListener"
 		class="com.paipianwang.mq.consumer.listener.MailConsumerSessionAwareMessageListener"></bean>
@@ -197,7 +208,15 @@
 	<!-- 可以获取session的MessageListener,项目验收函邮件发送队列监听事件 -->
 	<bean id="projectAcceptLetterMailMessageListener"
 		class="com.paipianwang.mq.consumer.listener.ProjectAcceptLetterMailMessageListener"></bean>
+		
+	<!-- 可以获取session的MessageListener,项目添加留言回复通知邮件队列监听事件 -->
+	<bean id="topicReplyInformMailMessageListener"
+		class="com.paipianwang.mq.consumer.listener.TopicReplyInformMailMessageListener"></bean>
+		
+	<!--************************监听事件 end************************ -->
 
+	<!-- ************************监听事件绑定监听队列************************ -->
+	
 	<jms:listener-container container-type="default"
 		connection-factory="connectionFactory" acknowledge="auto" concurrency="10"
 		task-executor="threadPoolTaskExecutor">
@@ -224,5 +243,7 @@
 			ref="projectAcceptConfirmMailMessageListener" method="onMessage" />
 		<jms:listener destination="${projectAcceptLetterQueue}"
 			ref="projectAcceptLetterMailMessageListener" method="onMessage" />
+		<jms:listener destination="${topicReplyInformEmailQueue}"
+			ref="topicReplyInformMailMessageListener" method="onMessage" />
 	</jms:listener-container>
 </beans>

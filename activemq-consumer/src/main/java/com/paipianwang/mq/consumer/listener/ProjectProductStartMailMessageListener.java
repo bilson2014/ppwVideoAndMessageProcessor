@@ -24,7 +24,7 @@ public class ProjectProductStartMailMessageListener implements SessionAwareMessa
 	@Autowired
 	private JmsTemplate activeMqJmsTemplate;
 	@Autowired
-	private Destination mailQueue;
+	private Destination projectProductStartQueue;
 	@Autowired
 	private ProductMailService productMailService;
 	
@@ -39,17 +39,21 @@ public class ProjectProductStartMailMessageListener implements SessionAwareMessa
 			}
 			JSONObject json=JSONObject.parseObject(ms);
 			String projectId=json.getString("projectId");
-			
+			int time=json.getIntValue("time");//初始为0
 			try {
 				productMailService.sendProjectMakingList(projectId);
 				Thread.sleep(200);
 			} catch (Exception e) {
-				// 发送异常，重新放回队列
-				activeMqJmsTemplate.send(mailQueue, new MessageCreator() {
-					public Message createMessage(Session session) throws JMSException {
-						return session.createTextMessage(ms);
-					}
-				});
+				// 发送异常，重新放回队列-最多尝试3次
+				if(time<=2){
+					time++;
+					json.put("time", time);
+					activeMqJmsTemplate.send(projectProductStartQueue, new MessageCreator() {
+						public Message createMessage(Session session) throws JMSException {
+							return session.createTextMessage(json.toString());
+						}
+					});
+				}
 				logger.error("==>MailException:", e);
 			}
 		} catch (Exception e) {

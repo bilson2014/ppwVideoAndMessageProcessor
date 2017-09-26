@@ -24,7 +24,7 @@ public class ProjectAcceptConfirmMailMessageListener implements SessionAwareMess
 	@Autowired
 	private JmsTemplate activeMqJmsTemplate;
 	@Autowired
-	private Destination mailQueue;
+	private Destination projectAcceptConfirmQueue;
 	@Autowired
 	private ProductMailService productMailService;
 	
@@ -39,16 +39,22 @@ public class ProjectAcceptConfirmMailMessageListener implements SessionAwareMess
 			}
 			JSONObject json=JSONObject.parseObject(ms);
 			String projectId=json.getString("projectId");
+			int time=json.getIntValue("time");//初始为0
 			try {
 				productMailService.sendProjectAcceptConfirm(projectId);;
 				Thread.sleep(200);
 			} catch (Exception e) {
-				// 发送异常，重新放回队列
-				activeMqJmsTemplate.send(mailQueue, new MessageCreator() {
-					public Message createMessage(Session session) throws JMSException {
-						return session.createTextMessage(ms);
-					}
-				});
+				// 发送异常，重新放回队列-最多尝试3次
+				if(time<=2){
+					time++;
+					json.put("time", time);
+					activeMqJmsTemplate.send(projectAcceptConfirmQueue, new MessageCreator() {
+						public Message createMessage(Session session) throws JMSException {
+							return session.createTextMessage(json.toString());
+						}
+					});
+				}
+				
 				logger.error("==>MailException:", e);
 			}
 		} catch (Exception e) {
@@ -57,4 +63,9 @@ public class ProjectAcceptConfirmMailMessageListener implements SessionAwareMess
 		
 	}
 
+	public static void main(String[] args) {
+		String s="{\"id\":1,\"name\":\"mi\"}";
+		JSONObject json=JSONObject.parseObject(s);
+		System.out.println(json.getString("name")+"-"+json.getIntValue("time"));
+	}
 }

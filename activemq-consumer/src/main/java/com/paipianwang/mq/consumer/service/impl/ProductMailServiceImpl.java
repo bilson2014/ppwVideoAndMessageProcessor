@@ -27,6 +27,7 @@ import com.paipianwang.mq.consumer.service.ProductMailService;
 import com.paipianwang.mq.utils.MailTemplateFactory;
 import com.paipianwang.pat.common.config.PublicConfig;
 import com.paipianwang.pat.common.enums.FileType;
+import com.paipianwang.pat.common.util.DateUtils;
 import com.paipianwang.pat.common.util.MoneyUtil;
 import com.paipianwang.pat.common.util.ValidateUtil;
 import com.paipianwang.pat.common.web.poi.util.GenerateExcel;
@@ -102,7 +103,7 @@ public class ProductMailServiceImpl implements ProductMailService {
 		metaData.add("productName");
 		metaData.add("productConfigLevelName");
 		metaData.add("estimatedPrice");
-		metaData.add("productConfigLength");
+		metaData.add("productConfigLengthName");
 		metaData.add("productConfigAdditionalPackageName");
 
 		PmsProjectFlow flow = pmsProjectFlowFacade.getProjectFlowByProjectId(metaData, projectId);
@@ -112,11 +113,10 @@ public class ProductMailServiceImpl implements ProductMailService {
 		value[0] = user.getUserName();// 客户名称
 		value[1] = flow.getProjectName();
 		value[2] = flow.getProductName() + "+" + flow.getProductConfigLevelName();
-		if(ValidateUtil.isValid(flow.getProductConfigLength())){
-			PmsDimension dimension=pmsDimensionFacade.getDimensionById(Long.parseLong(flow.getProductConfigLength()));
-			if(dimension!=null){
-				value[2]=value[2]+ "+" + dimension.getRowName();
-			}
+		if(ValidateUtil.isValid(flow.getProductConfigLengthName())){
+			
+				value[2]=value[2]+ "+" + flow.getProductConfigLengthName();
+			
 		}
 		
 		if(ValidateUtil.isValid(flow.getProductConfigAdditionalPackageName())){
@@ -314,7 +314,9 @@ public class ProductMailServiceImpl implements ProductMailService {
 		mainValue[1] = flow.getProjectName();
 		mainValue[2] = team.getPlanContent();// 供应商策划内容
 		mainValue[3] = team.getBudget() + "";// 取供应商预算价格
-		mainValue[4] = team.getPlanTime();// 项目策划交付时间 TODO 年月日
+		if(ValidateUtil.isValid(team.getPlanTime())){
+			mainValue[4] = DateUtils.getDateByFormatStr(DateUtils.getDateByFormat(team.getPlanTime(), "yyyy-MM-dd"), "yyyy年MM月dd日");// 项目策划交付时间
+		}
 		mainValue[5] = team.getRemark();
 		mainValue[6]=team.getAccessMan();//TODO 模板添加对接人、手机--取新字段
 		mainValue[7]=team.getAccessManTelephone();
@@ -629,8 +631,17 @@ public class ProductMailServiceImpl implements ProductMailService {
 		params.add(user.getUserName());
 		params.add(flow.getProjectId());
 		params.add(flow.getProjectName());
-		params.add(user.getAppointedTime());
-		params.add(user.getDeliveryTime());
+		if(ValidateUtil.isValid(user.getAppointedTime())){
+			params.add(DateUtils.getDateByFormatStr(DateUtils.getDateByFormat(user.getAppointedTime(), "yyyy-MM-dd"), "yyyy年MM月dd日"));
+		}else{
+			params.add("");
+		}
+		
+		if(ValidateUtil.isValid(user.getDeliveryTime())){
+			params.add(DateUtils.getDateByFormatStr(DateUtils.getDateByFormat(user.getDeliveryTime(), "yyyy-MM-dd"), "yyyy年MM月dd日"));
+		}else{
+			params.add("");
+		}
 		params.add(MoneyUtil.changeToChinese(flow.getProjectBudget().doubleValue()));
 		params.add(flow.getProjectBudget() + "");
 		params.add(user.getUserName());
