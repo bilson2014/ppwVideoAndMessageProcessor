@@ -3,6 +3,7 @@ package com.paipianwang.mq.consumer.service.impl;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,8 +18,9 @@ import com.paipianwang.mq.consumer.resource.model.MailParam;
 import com.paipianwang.mq.consumer.service.MailService;
 import com.paipianwang.mq.consumer.service.ProjectTopicMailService;
 import com.paipianwang.mq.utils.MailTemplateFactory;
+import com.paipianwang.pat.common.config.PublicConfig;
+import com.paipianwang.pat.common.util.DateUtils;
 import com.paipianwang.pat.common.util.ValidateUtil;
-import com.paipianwang.pat.common.util.sms.DateUtil;
 import com.paipianwang.pat.facade.information.entity.PmsMail;
 import com.paipianwang.pat.facade.information.service.PmsMailFacade;
 import com.paipianwang.pat.facade.right.entity.PmsEmployee;
@@ -56,11 +58,7 @@ public class ProjectTopicMailServiceImpl implements ProjectTopicMailService{
 	@Autowired
 	private MailService mailService=null;
 	@Autowired
-	private final PmsTeamFacade pmsTeamFacade=null;
-	@Autowired
 	private final PmsUserFacade pmsUserFacade=null;
-	@Autowired
-	private final PmsProjectTeamFacade pmsProjectTeamFacade=null;
 	@Autowired
 	private final PmsProjectUserFacade pmsProjectUserFacade=null;
 	
@@ -89,7 +87,7 @@ public class ProjectTopicMailServiceImpl implements ProjectTopicMailService{
 		if(!ValidateUtil.isValid(sendToId)){
 			return ;
 		}
-		//组装邮件内容
+		//邮件内容
 		String content=m.getContent();
 		String subject=m.getSubject();
 		
@@ -106,15 +104,39 @@ public class ProjectTopicMailServiceImpl implements ProjectTopicMailService{
 		metaData.add("projectName");
 
 		PmsProjectFlow flow = pmsProjectFlowFacade.getProjectFlowByProjectId(metaData, currentMessage.getProjectId());
-		String[] values=new String[5];
+		//组装邮件内容
+		String[] values=new String[8];
 		values[1]=flow.getProjectName();
+		values[2]=DateUtils.getDateByFormatStr(DateUtils.getDateByFormat(currentMessage.getCreateDate(), "yyyy-MM-dd HH:mm:ss"), "yyyy年MM月dd日HH时");
+		values[7]="<a href='http://"+PublicConfig.FILM_URL+"/mgr/login' style='font-family:.PingFang-SC-Regular;font-size:14px;color:#fe5453;'>"
+				+ "http://"+PublicConfig.FILM_URL+"/mgr/login</a> ";
 		
-		values[2]=currentMessage.getCreateDate();
-		values[3]=currentMessage.getFromName()+":"+currentMessage.getContent();
-		values[4]="http://www.apaipian.com/project/running";
+		String reply="";
+		StringBuilder replyResult=new StringBuilder();
+		if(content.contains("{begin-1}")&&content.contains("{end-1}")){
+			reply=content.substring(content.indexOf("{begin-1}")+"{begin-1}".length(), content.indexOf("{end-1}"));
+		}
 		
+		String topicSender="";
+		for(PmsProjectMessage message:relativeMessage){
+			if(message.getParentId()==null){
+				//topic
+				topicSender=message.getFromId();
+				values[4]=message.getFromName();
+				values[5]=message.getContent();
+				values[6]=message.getCreateDate();
+			}else{
+				//处理reply
+				String[] replyValue=new String[3];
+				replyValue[0]=message.getFromName();
+				replyValue[1]=message.getContent();
+				replyValue[2]=message.getCreateDate();
+				replyResult.append(MailTemplateFactory.decorate(replyValue,reply));
+			}
+		}
 		
-		
+		content=content.replace("{begin-1}"+reply+"{end-1}", replyResult.toString());
+			
 		subject=MailTemplateFactory.decorate(new String[]{flow.getProjectName()}, subject);
 		
 		for(String each:sendToId){
@@ -124,17 +146,36 @@ public class ProjectTopicMailServiceImpl implements ProjectTopicMailService{
 				PmsEmployee employee=pmsEmployeeFacade.findEmployeeById(Long.parseLong(each.split("employee_")[1]));
 				values[0]=employee.getEmployeeRealName();
 				mail.setTo(employee.getEmail());
+				if(each.equals(topicSender)){
+					values[3]="http://resource.apaipian.com/resource/"+employee.getEmployeeImg();//topic图片	
+//					values[3]="http://123.59.86.252:8888/"+employee.getEmployeeImg();//topic图片	
+				}
 			}else if(each.startsWith("user_")){
 				PmsUser user=pmsUserFacade.findUserById(Long.parseLong(each.split("user_")[1]));
 				mail.setTo(user.getEmail());
 				PmsProjectUser pu=pmsProjectUserFacade.getProjectUserById(Long.parseLong(each.split("user_")[1]));
 				values[0]=pu.getLinkman();
-			}else if(each.startsWith("team_")){
-				PmsTeam team=pmsTeamFacade.getTeamInfo(Long.parseLong(each.split("team_")[1]));
-				mail.setTo(team.getEmail());
-				PmsProjectTeam pt=pmsProjectTeamFacade.getProjectTeamByProjectTeamId(Long.parseLong(each.split("team_")[1]));
-				values[0]=pt.getLinkman();
+				if(each.equals(topicSender)){
+					values[3]="http://resource.apaipian.com/resource/"+user.getImgUrl();//topic图片
+//					values[3]="http://123.59.86.252:8888/"+user.getImgUrl();//topic图片
+				}
 			}
+//			else if(each.startsWith("team_")){//供应商暂无法发送、查看留言
+//				PmsTeam team=pmsTeamFacade.getTeamInfo(Long.parseLong(each.split("team_")[1]));
+//				mail.setTo(team.getEmail());
+//				PmsProjectTeam pt=pmsProjectTeamFacade.getProjectTeamByProjectTeamId(Long.parseLong(each.split("team_")[1]));
+//				values[0]=pt.getLinkman();
+//				if(each.equals(topicSender)){
+//					values[3]=""+team.getTeamPhotoUrl();//topic图片	
+//				}
+//			}
+			if(!ValidateUtil.isValid(mail.getTo())){
+				logger.error(values[0]+" no mail error ");
+				continue;
+			}
+			//添加首尾模板
+			content = MailTemplateFactory.addHtml(content);
+			content = MailTemplateFactory.addImgHost(content);
 			//邮件发送
 			content=MailTemplateFactory.decorate(values,content);	
 			mail.setContent(content);
@@ -142,5 +183,4 @@ public class ProjectTopicMailServiceImpl implements ProjectTopicMailService{
 			mailService.sendMail(mail);
 		}
 	}
-
 }
