@@ -61,6 +61,12 @@ public class ProjectTopicMailServiceImpl implements ProjectTopicMailService{
 	private final PmsUserFacade pmsUserFacade=null;
 	@Autowired
 	private final PmsProjectUserFacade pmsProjectUserFacade=null;
+//	@Autowired
+//	private final PmsTeamFacade pmsTeamFacade=null;
+//	@Autowired
+//	private final PmsProjectTeamFacade pmsProjectTeamFacade=null;
+	
+	
 	
 	/**
 	 * 留言新回复通知邮件发送
@@ -138,8 +144,9 @@ public class ProjectTopicMailServiceImpl implements ProjectTopicMailService{
 		content=content.replace("{begin-1}"+reply+"{end-1}", replyResult.toString());
 			
 		subject=MailTemplateFactory.decorate(new String[]{flow.getProjectName()}, subject);
-		
+		String defaultPic="group1/M00/00/AF/Cgpw7FnPS-2AM5NKAAAGk0kkEz8002.png";//默认头像
 		for(String each:sendToId){
+			String pic=defaultPic;
 			MailParam mail =new MailParam();
 			//获取接收人
 			if(each.startsWith("employee_")){
@@ -147,7 +154,9 @@ public class ProjectTopicMailServiceImpl implements ProjectTopicMailService{
 				values[0]=employee.getEmployeeRealName();
 				mail.setTo(employee.getEmail());
 				if(each.equals(topicSender)){
-					values[3]="http://resource.apaipian.com/resource/"+employee.getEmployeeImg();//topic图片	
+					if(ValidateUtil.isValid(employee.getEmployeeImg())){
+						pic=employee.getEmployeeImg();//topic图片	
+					}
 //					values[3]="http://123.59.86.252:8888/"+employee.getEmployeeImg();//topic图片	
 				}
 			}else if(each.startsWith("user_")){
@@ -156,7 +165,9 @@ public class ProjectTopicMailServiceImpl implements ProjectTopicMailService{
 				PmsProjectUser pu=pmsProjectUserFacade.getProjectUserById(Long.parseLong(each.split("user_")[1]));
 				values[0]=pu.getLinkman();
 				if(each.equals(topicSender)){
-					values[3]="http://resource.apaipian.com/resource/"+user.getImgUrl();//topic图片
+					if(ValidateUtil.isValid(user.getImgUrl())){
+						pic=user.getImgUrl();//topic图片
+					}
 //					values[3]="http://123.59.86.252:8888/"+user.getImgUrl();//topic图片
 				}
 			}
@@ -173,6 +184,7 @@ public class ProjectTopicMailServiceImpl implements ProjectTopicMailService{
 				logger.error(values[0]+" no mail error ");
 				continue;
 			}
+			values[3]="http://resource.apaipian.com/resource/"+pic;
 			//添加首尾模板
 			content = MailTemplateFactory.addHtml(content);
 			content = MailTemplateFactory.addImgHost(content);
