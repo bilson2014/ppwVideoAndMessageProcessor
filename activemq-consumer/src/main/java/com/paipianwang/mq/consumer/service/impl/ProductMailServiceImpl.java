@@ -143,7 +143,7 @@ public class ProductMailServiceImpl implements ProductMailService {
 	 */
 	private void getByMail(String mailType, String projectId, Map<String, Map<String, Object>> amap,
 			Map<String, Object> each) {
-		PmsMail m = null;//mailDao.getMailFromRedis(mailType);
+		PmsMail m = mailDao.getMailFromRedis(mailType);
 		if (null == m){
 			m = pmsMailFacade.getTemplateByType(mailType);
 		}
@@ -196,7 +196,7 @@ public class ProductMailServiceImpl implements ProductMailService {
 					PmsProjectResource resource=pmsProjectResourceFacade.getValidProjectResources(projectId, fileType);
 					
 					if (resource!=null) {
-						fileUrls.add(new String[] { resource.getResourceName(),resource.getResourcePath(),"" });
+						fileUrls.add(new String[] { resource.getResourceName(),resource.getResourcePath(),"",resource.getResourceType(),resource.getCreateDate() });
 					}
 				}
 				if (ValidateUtil.isValid(fileUrls)) {
@@ -480,6 +480,35 @@ public class ProductMailServiceImpl implements ProductMailService {
 
 		each.put("subject", new String[] { flow.getProjectName() });
 
+		//如果同时存在客户影片修改表及会审影片修改表则取最新（直接比较当前版本即可）
+		String[][] files=each.get("files")==null?null:(String[][])each.get("files");
+		if(files!=null){
+			String[] vedioRevise=null;//客户影片修改表
+			String[] demoUpdate=null;//视频影片修改表
+			List<String[]> fileList=new ArrayList<>();
+			
+			for(String[] file:files){
+				if(file[2]==""){
+					if(FileType.vedioRevise.getId().equals(file[3])){
+						vedioRevise=file;
+					}else if(FileType.demoUpdate.getId().equals(file[3])){
+						demoUpdate=file;
+					}
+				}
+				
+				fileList.add(file);
+			}
+			if(vedioRevise!=null && demoUpdate!=null){
+				if(vedioRevise[4].compareTo(demoUpdate[4])>0){
+					fileList.remove(demoUpdate);
+				}else{
+					fileList.remove(vedioRevise);
+				}
+				each.put("files", fileList.toArray(new String[fileList.size()][]));
+			}
+		}
+		
+		
 		sendAttachMailsByType(mailType, amap);
 	}
 
@@ -567,6 +596,38 @@ public class ProductMailServiceImpl implements ProductMailService {
 		sendAttachMailsByType(mailType, amap);
 	}
 
+	/**
+	 * 向监制发送新项目提醒
+	 */
+	@Override
+	public void sendEmailToSupervise(String projectId) {
+		String mailType = "emailInformation";
+		Map<String, Map<String, Object>> amap = new HashMap<>();
+		Map<String, Object> each = new HashMap<String, Object>();
+		// 收件人-监制
+		getByMail(mailType, projectId, amap, each);
+		
+		
+		List<PmsProjectSynergy> supervises=pmsProjectSynergyFacade.getSynergys(projectId, ProjectRoleType.supervise.getId());
+		if(!ValidateUtil.isValid(supervises)){
+			//无监制
+			logger.error("no supervise");
+			return ;
+		}
+		List<String> metaData = new ArrayList<String>();
+		metaData.add("projectId");
+		metaData.add("projectName");
+		PmsProjectFlow flow=pmsProjectFlowFacade.getProjectFlowByProjectId(metaData, projectId);
+		// 邮件内容参数
+		String[] value = new String[2];
+		value[0]=supervises.get(0).getEmployeeName();
+		value[1]=flow.getProjectName();
+		
+		
+		each.put("value", value);
+		sendAttachMailsByType(mailType, amap);
+	}
+	
 	// 生成项目制作单
 	private String generateExcel(List<String> params, PmsProjectFlow flow, PmsProjectTeam team) {
 		params.add(flow.getProjectName());
@@ -674,7 +735,9 @@ public class ProductMailServiceImpl implements ProductMailService {
 	public void sendAttachMailsByType(String mailType, Map<String, Map<String,Object>> map) {
 		PmsMail m = mailDao.getMailFromRedis(mailType);
 		if(null == m)m = pmsMailFacade.getTemplateByType(mailType);
+		
 		if(null != m){
+			logger.info("get mail :"+mailType+",subject:"+m.getSubject());
 			try {
 				String content = m.getContent();
 				//1.转码
@@ -723,4 +786,6 @@ public class ProductMailServiceImpl implements ProductMailService {
 			logger.error("the mail type" + mailType + " is not exist");
 		}
 	}
+
+
 }

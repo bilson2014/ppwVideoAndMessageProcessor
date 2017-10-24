@@ -154,6 +154,12 @@
 			<value>${projectAcceptLetterQueue}</value>
 		</constructor-arg>
 	</bean>
+	<!-- 发送通知给监制邮件队列地址 -->
+	<bean id="emailInformationQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${emailInformationQueue}</value>
+		</constructor-arg>
+	</bean>
 	
 	<!--项目添加留言回复通知邮件队列地址 -->
 	<bean id="topicReplyInformEmailQueue" class="org.apache.activemq.command.ActiveMQQueue">
@@ -209,6 +215,10 @@
 	<bean id="projectAcceptLetterMailMessageListener"
 		class="com.paipianwang.mq.consumer.listener.ProjectAcceptLetterMailMessageListener"></bean>
 		
+	<!-- 可以获取session的MessageListener,项目验收函邮件发送队列监听事件 -->
+	<bean id="emailInformationMessageListener"
+		class="com.paipianwang.mq.consumer.listener.EmailInformationMessageListener"></bean>
+		
 	<!-- 可以获取session的MessageListener,项目添加留言回复通知邮件队列监听事件 -->
 	<bean id="topicReplyInformMailMessageListener"
 		class="com.paipianwang.mq.consumer.listener.TopicReplyInformMailMessageListener"></bean>
@@ -243,6 +253,8 @@
 			ref="projectAcceptConfirmMailMessageListener" method="onMessage" />
 		<jms:listener destination="${projectAcceptLetterQueue}"
 			ref="projectAcceptLetterMailMessageListener" method="onMessage" />
+		<jms:listener destination="${emailInformationQueue}"
+			ref="emailInformationMessageListener" method="onMessage" />
 		<jms:listener destination="${topicReplyInformEmailQueue}"
 			ref="topicReplyInformMailMessageListener" method="onMessage" />
 	</jms:listener-container>

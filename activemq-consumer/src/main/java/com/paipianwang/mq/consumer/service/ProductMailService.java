@@ -46,5 +46,11 @@ public interface ProductMailService {
 	 * @param projectId
 	 */
 	public void sendProjectAcceptLetter(String projectId);
+
+	/**
+	 * 监制新项目提醒
+	 * @param projectId
+	 */
+	public void sendEmailToSupervise(String projectId);
 	
 }
