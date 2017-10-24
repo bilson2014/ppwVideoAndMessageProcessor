@@ -564,6 +564,7 @@ public class ProductMailServiceImpl implements ProductMailService {
 		teamData.add("linkman");
 		teamData.add("telephone");
 		teamData.add("email");
+		teamData.add("invoiceHead");
 		PmsProjectTeam team = pmsProjectTeamFacade.getProjectTeamByMap(teamData, projectId,
 				ProjectTeamType.produce.getCode());
 
@@ -572,14 +573,14 @@ public class ProductMailServiceImpl implements ProductMailService {
 		value[0] = flow.getProjectName();
 		value[1] = team.getTeamName();
 		value[2] = flow.getProjectName();
-		if("1".equals(team.getInvoiceHead())){
+		if("北京拍片乐科技有限公司".equals(team.getInvoiceHead())){
 			value[3] = "发票名称：北京拍片乐科技有限公司<br />" 
 					+ "发票类型：增值税专用发票<br />" 
 					+ "纳税人识别号：91110108348400996C<br />"
 					+ "地址：北京市丰台区汽车博物馆东路6号3号楼1单元7层701-A03(园区)<br />" 
 					+ "电话：010-82316139<br />"
 					+ "开户行及账号：建设北京财满街支行 11001119400052546467";
-		}else{
+		}else if("北京攀峰文化传播有限公司".equals(team.getInvoiceHead())){
 			value[3] = "发票名称：北京攀峰文化传播有限公司<br />" 
 					+ "发票类型：增值税普通发票<br />" 
 					+ "纳税人识别号：911101050592401725<br />"
