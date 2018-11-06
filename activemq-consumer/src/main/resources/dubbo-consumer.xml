@@ -10,9 +10,9 @@
 
 	<!-- 使用zookeeper注册中心暴露服务地址 -->
 	<!-- 注册中心地址 -->
-	<dubbo:registry protocol="zookeeper" address="106.75.105.16:2181,106.75.105.16:2182,106.75.105.16:2183" />
+	<dubbo:registry protocol="zookeeper" address="106.75.66.244:2181,106.75.66.244:2182,106.75.66.244:2183" />
 	<!-- test -->
-	<!-- <dubbo:registry protocol="zookeeper" address="123.59.75.93:2181" /> -->
+	<!-- <dubbo:registry protocol="zookeeper" address="106.75.105.232:2181" /> -->
 	
 	<!-- 用户服务接口 -->
 	<dubbo:reference interface="com.paipianwang.facade.video.service.VideoHandlerFacade" id="videoHandlerFacade" check="false" timeout="1200000" />
