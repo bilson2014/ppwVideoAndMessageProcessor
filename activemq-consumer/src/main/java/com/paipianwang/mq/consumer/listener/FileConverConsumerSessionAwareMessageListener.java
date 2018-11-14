@@ -9,7 +9,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.listener.SessionAwareMessageListener;
-import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONObject;
 import com.paipianwang.facade.video.service.VideoHandlerFacade;
@@ -21,8 +20,8 @@ import com.paipianwang.pat.facade.product.service.PmsProductFacade;
  * @author Jack
  *
  */
-
-@Component
+@Deprecated
+//@Component
 public class FileConverConsumerSessionAwareMessageListener implements SessionAwareMessageListener<Message> {
 
 	private static final Log log = LogFactory.getLog(FileConverConsumerSessionAwareMessageListener.class);
