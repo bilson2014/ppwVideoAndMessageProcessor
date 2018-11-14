@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		                   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		                   http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+		                   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		                   http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+		                   http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+<!-- classpath:jdbc.properties,,classpath:redis.properties -->
+	<context:property-placeholder location="classpath:video.properties, classpath:mq.properties" />
+
+	<!-- <context:component-scan base-package="com.paipianwang.mq.consumer.service,
+										  com.paipianwang.mq.utils,
+										  com.paipianwang.mq.consumer.dao" /> -->
+
+	<context:annotation-config />
+
+	<tx:annotation-driven />
+	
+	<!-- proxy-target-class默认"false",更改为"ture"使用CGLib动态代理 -->
+	<!-- <aop:aspectj-autoproxy proxy-target-class="true" />	 -->
+	
+	<!-- <bean id="globalConstants" class="com.paipianwang.mq.consumer.domain.GlobalConstants">
+		<constructor-arg name="accountSID" value="${sms.accountSID}" />
+		<constructor-arg name="auth_token" value="${sms.authToken}" />
+		<constructor-arg name="appId" value="${sms.appID}" />
+		<constructor-arg name="https_url" value="${sms.https_url}" />
+		<constructor-arg name="https_port" value="${sms.https_port}" />
+		<constructor-arg name="template_register" value="${sms.template.register}" />
+		<constructor-arg name="template_notice" value="${sms.template.notice}" />
+	</bean> -->
+	<bean id="ppwFFmpegExecutor" name="ppwFFmpegExecutor" class="com.paipianwang.mq.video.utils.PPWFFmpegExecutor" init-method="init">
+		<property name="timeoutParam" value="${timeoutParam}" />
+		<property name="ffmpegParam" value="${ffmpegParam}" />
+		<property name="ffprobeParam" value="${ffprobeParam}" />
+		<property name="bitRate" value="${bitRate}" />
+	</bean>
+	<bean id="globalConstants" class="com.paipianwang.mq.video.domain.GlobalConstants">
+		<constructor-arg name="inputFileDir" value="${inputdir}" />
+		<constructor-arg name="convertFileDir" value="${outputdir}" />
+		<constructor-arg name="checkInputDir" value="${checkinputdir}" />
+		<constructor-arg name="reportDir" value="${reportdir}" />
+	</bean>
+	
+	<import resource="spring-mq.xml" />
+	
+	<import resource="dubbo-consumer.xml"/>
+	
+	<context:component-scan
+		base-package="com.paipianwang.mq.video.service,
+					com.paipianwang.mq.video.biz
+					  " />
+	
+	<!-- redis 配置 -->
+	<!-- <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		最大连接数
+		<property name="maxTotal" value="${redis.maxTotal}" />
+		最大空闲数
+		<property name="maxIdle" value="${redis.maxIdle}" />
+		每次释放连接的最大数目
+		<property name="numTestsPerEvictionRun" value="${redis.numTestsPerEvictionRun}" />
+		释放连接的扫描间隔（毫秒）
+		<property name="timeBetweenEvictionRunsMillis" value="${redis.timeBetweenEvictionRunsMillis}" />
+		连接最小空闲时间
+		<property name="minEvictableIdleTimeMillis" value="${redis.minEvictableIdleTimeMillis}" />
+		连接空闲多久后 释放，当空闲时间 > 该值 且 空闲连接 > 最大空闲连接数 时，直接释放
+		<property name="softMinEvictableIdleTimeMillis" value="${redis.softMinEvictableIdleTimeMillis}" />
+		最大等待时间
+		<property name="maxWaitMillis" value="${redis.maxWaitMillis}" />
+		获取连接时检查有效性，默认false
+		<property name="testOnBorrow" value="${redis.testOnBorrow}" />
+		空闲时检查有效性，默认false
+		<property name="testWhileIdle" value="${redis.testWhileIdle}" />
+		连接耗尽是否阻塞，false报异常，true阻塞直到超时，默认true
+		<property name="blockWhenExhausted" value="${blockWhenExhausted}" />
+	</bean>
+
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+		<constructor-arg index="0" ref="jedisPoolConfig" />
+		<constructor-arg index="1" value="${redis.server}" />
+		<constructor-arg index="2" value="6379" />
+		<constructor-arg index="3" value="${redis.timeout}" />
+		<constructor-arg index="4" value="${redis.password}" />
+	</bean> -->
+</beans>
