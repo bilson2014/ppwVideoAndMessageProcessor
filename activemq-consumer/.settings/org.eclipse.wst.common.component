@@ -4,6 +4,39 @@
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <dependent-module archiveName="pat-facade-video-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-facade-video/pat-facade-video">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="pat-common-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-common/pat-common">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="pat-common-config-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-common-config/pat-common-config">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="pat-common-web-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-common-web/pat-common-web">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="pat-facade-product-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-facade-product/pat-facade-product">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="pat-facade-workflow-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-facade-workflow/pat-facade-workflow">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="pat-facade-right-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-facade-right/pat-facade-right">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="pat-facade-user-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-facade-user/pat-facade-user">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="pat-facade-employee-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-facade-employee/pat-facade-employee">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="pat-facade-team-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-facade-team/pat-facade-team">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="pat-facade-information-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/pat-facade-information/pat-facade-information">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="activemq-consumer"/>
         <property name="java-output-path" value="/activemq-consumer/target/classes"/>
     </wb-module>

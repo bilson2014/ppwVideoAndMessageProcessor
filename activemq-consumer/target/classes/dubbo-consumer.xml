@@ -10,8 +10,9 @@
 
 	<!-- 使用zookeeper注册中心暴露服务地址 -->
 	<!-- 注册中心地址 -->
-	<!-- <dubbo:registry protocol="zookeeper" address="106.75.105.16:2181,106.75.105.16:2182,106.75.105.16:2183" /> -->
-	<dubbo:registry protocol="zookeeper" address="123.59.75.93:2181" />
+	<dubbo:registry protocol="zookeeper" address="106.75.66.244:2181,106.75.66.244:2182,106.75.66.244:2183" />
+	<!-- test -->
+	<!-- <dubbo:registry protocol="zookeeper" address="106.75.105.232:2181" /> -->
 	
 	<!-- 用户服务接口 -->
 	<dubbo:reference interface="com.paipianwang.facade.video.service.VideoHandlerFacade" id="videoHandlerFacade" check="false" timeout="1200000" />
@@ -24,6 +25,7 @@
 	<dubbo:reference interface="com.paipianwang.pat.workflow.facade.PmsProjectSynergyFacade" id="pmsProjectSynergyFacade" check="false" timeout="5000"/>
 	<dubbo:reference interface="com.paipianwang.pat.workflow.facade.PmsProjectTeamFacade" id="pmsProjectTeamFacade" check="false" timeout="5000"/>
 	<dubbo:reference interface="com.paipianwang.pat.workflow.facade.PmsProjectUserFacade" id="pmsProjectUserFacade" check="false" timeout="5000"/>
+	<dubbo:reference interface="com.paipianwang.pat.workflow.facade.PmsProjectMessageFacade" id="pmsProjectMessageFacade" check="false" timeout="5000"/>
 	<!--供应商服务接口 -->
 	<dubbo:reference interface="com.paipianwang.pat.facade.team.service.PmsTeamFacade" id="pmsTeamFacade" check="false" timeout="15000" />
 	<dubbo:reference interface="com.paipianwang.pat.facade.team.service.PmsTeamTmpFacade" id="pmsTeamTmpFacade" check="false" timeout="5000"/>
@@ -38,5 +40,6 @@
 	<!--消息通知服务接口 -->
 	<dubbo:reference interface="com.paipianwang.pat.facade.information.service.PmsMailFacade" id="pmsMailFacade" check="false" timeout="5000"/>
 	<dubbo:reference interface="com.paipianwang.pat.facade.information.service.PmsNewsFacade" id="pmsNewsFacade" check="false" timeout="5000"/>
-	
+	<!-- 产品服务接口 -->
+	<dubbo:reference interface="com.paipianwang.pat.facade.product.service.PmsDimensionFacade" id="pmsDimensionFacade" check="false" timeout="5000"/>
 </beans>

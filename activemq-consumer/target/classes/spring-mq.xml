@@ -106,11 +106,11 @@
 	</bean>
 
 	<!--短信队列地址 -->
-	<bean id="fileConverQueue" class="org.apache.activemq.command.ActiveMQQueue">
+	<!-- <bean id="fileConverQueue" class="org.apache.activemq.command.ActiveMQQueue">
 		<constructor-arg>
 			<value>${fileConverQueue}</value>
 		</constructor-arg>
-	</bean>
+	</bean> -->
 
 	<!--项目告知函邮件队列地址 -->
 	<bean id="projectInfoLetterQueue" class="org.apache.activemq.command.ActiveMQQueue">
@@ -154,6 +154,12 @@
 			<value>${projectAcceptLetterQueue}</value>
 		</constructor-arg>
 	</bean>
+	<!-- 发送通知给监制邮件队列地址 -->
+	<bean id="emailInformationQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>${emailInformationQueue}</value>
+		</constructor-arg>
+	</bean>
 	
 	<!--项目添加留言回复通知邮件队列地址 -->
 	<bean id="topicReplyInformEmailQueue" class="org.apache.activemq.command.ActiveMQQueue">
@@ -178,8 +184,8 @@
 		class="com.paipianwang.mq.consumer.listener.LogConsumerSessionAwareMessageListener"></bean>
 
 	<!-- 可以获取session的MessageListener,日志队列监听事件 -->
-	<bean id="fileConverConsumerSessionAwareMessageListener"
-		class="com.paipianwang.mq.consumer.listener.FileConverConsumerSessionAwareMessageListener"></bean>
+	<!-- <bean id="fileConverConsumerSessionAwareMessageListener"
+		class="com.paipianwang.mq.consumer.listener.FileConverConsumerSessionAwareMessageListener"></bean> -->
 <!-- 项目流程邮件发送  -->
 	<!-- 可以获取session的MessageListener,项目告知函邮件发送队列监听事件 -->
 	<bean id="projectInfoLetterMailMessageListener"
@@ -209,6 +215,10 @@
 	<bean id="projectAcceptLetterMailMessageListener"
 		class="com.paipianwang.mq.consumer.listener.ProjectAcceptLetterMailMessageListener"></bean>
 		
+	<!-- 可以获取session的MessageListener,项目验收函邮件发送队列监听事件 -->
+	<bean id="emailInformationMessageListener"
+		class="com.paipianwang.mq.consumer.listener.EmailInformationMessageListener"></bean>
+		
 	<!-- 可以获取session的MessageListener,项目添加留言回复通知邮件队列监听事件 -->
 	<bean id="topicReplyInformMailMessageListener"
 		class="com.paipianwang.mq.consumer.listener.TopicReplyInformMailMessageListener"></bean>
@@ -226,8 +236,8 @@
 			ref="smsRegisterConsumerSessionAwareMessageListener" method="onMessage" />
 		<jms:listener destination="${logQueue}"
 			ref="logConsumerSessionAwareMessageListener" method="onMessage" />
-		<jms:listener destination="${fileConverQueue}"
-			ref="fileConverConsumerSessionAwareMessageListener" method="onMessage" />
+		<!-- <jms:listener destination="${fileConverQueue}"
+			ref="fileConverConsumerSessionAwareMessageListener" method="onMessage" /> -->
 			
 		<jms:listener destination="${projectInfoLetterQueue}"
 			ref="projectInfoLetterMailMessageListener" method="onMessage" />
@@ -243,6 +253,8 @@
 			ref="projectAcceptConfirmMailMessageListener" method="onMessage" />
 		<jms:listener destination="${projectAcceptLetterQueue}"
 			ref="projectAcceptLetterMailMessageListener" method="onMessage" />
+		<jms:listener destination="${emailInformationQueue}"
+			ref="emailInformationMessageListener" method="onMessage" />
 		<jms:listener destination="${topicReplyInformEmailQueue}"
 			ref="topicReplyInformMailMessageListener" method="onMessage" />
 	</jms:listener-container>
